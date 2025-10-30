@@ -12,13 +12,13 @@ export default function MoodBoard() {
   const [selectedCategory, setSelectedCategory] = useState('all');
 
   // Quiz questions
-  const quizQuestions = [
+ const quizQuestions = [
     {
       question: "Do you remember what I wore the first day you met me?",
       options: [
-        { text: "A cool T-shirt", correct: false, emoji: "👕" },
+        { text: "Blue T-shirt full sleeve", correct: true, emoji: "👕" },
         { text: "A formal shirt", correct: false, emoji: "👔" },
-        { text: "A traditional kurta", correct: true, emoji: "🧥" },
+        { text: "A traditional kurta", correct: false, emoji: "🧥" },
         { text: "A comfy hoodie", correct: false, emoji: "🎽" }
       ]
     },
@@ -36,8 +36,8 @@ export default function MoodBoard() {
       options: [
         { text: "A romantic comedy", correct: false, emoji: "😂" },
         { text: "An action thriller", correct: false, emoji: "💥" },
-        { text: "A Bollywood romance", correct: true, emoji: "🎬" },
-        { text: "A horror movie (and you were scared!)", correct: false, emoji: "😱" }
+        { text: "A comedy horror", correct: true, emoji: "🎬" },
+        { text: "A Bollywood romance", correct: false, emoji: "😱" }
       ]
     },
     {
@@ -70,9 +70,9 @@ export default function MoodBoard() {
     {
       question: "What's our special song?",
       options: [
-        { text: "A romantic Hindi song", correct: true, emoji: "🎶" },
-        { text: "An English love song", correct: false, emoji: "🎸" },
-        { text: "A fun Punjabi track", correct: false, emoji: "🥁" },
+        { text: "96 Music", correct: true, emoji: "🎶" },
+        { text: "Sudhu Tomake Bhalovese", correct: false, emoji: "🎸" },
+        { text: "Sweet melody", correct: false, emoji: "🥁" },
         { text: "We don't have one yet", correct: false, emoji: "❓" }
       ]
     },
@@ -81,8 +81,8 @@ export default function MoodBoard() {
       options: [
         { text: "Surprised you on your birthday", correct: false, emoji: "🎂" },
         { text: "Stayed up all night talking to you", correct: false, emoji: "🌙" },
-        { text: "Made this website for you!", correct: true, emoji: "💻" },
-        { text: "Wrote you a love letter", correct: false, emoji: "💝" }
+        { text: "Wrote you a love letter", correct: true, emoji: "💝" },
+        { text: "Made this website for you!", correct: false, emoji: "💻" }
       ]
     }
   ];
