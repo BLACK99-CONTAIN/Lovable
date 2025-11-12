@@ -4,10 +4,387 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>lovable</title>
+    
+    <!-- PWA Meta Tags -->
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#ec4899">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="Lovable">
+    
+    <!-- Apple Touch Icons -->
+    <link rel="apple-touch-icon" href="/icon-192.png">
+    <link rel="apple-touch-icon" sizes="192x192" href="/icon-192.png">
+    <link rel="apple-touch-icon" sizes="512x512" href="/icon-512.png">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="/icon-512.png">
+    
+    <!-- SEO Meta Tags -->
+    <meta name="description" content="A beautiful collection of our precious moments together - Love memories, quiz, and photo gallery">
+    <meta name="keywords" content="love, memories, relationship, photos, quiz, couple, romance">
+    <meta name="author" content="Lovable">
+    
+    <!-- Open Graph / Social Media -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://lovable-front.onrender.com/">
+    <meta property="og:title" content="Our Love Memories - Lovable">
+    <meta property="og:description" content="A beautiful collection of our precious moments together">
+    <meta property="og:image" content="/icon-512.png">
+    
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Our Love Memories - Lovable">
+    <meta name="twitter:description" content="A beautiful collection of our precious moments together">
+    <meta name="twitter:image" content="/icon-512.png">
+    
+    <!-- Microsoft -->
+    <meta name="msapplication-TileColor" content="#ec4899">
+    <meta name="msapplication-TileImage" content="/icon-192.png">
+    <meta name="msapplication-config" content="/browserconfig.xml">
+    
+    <title>Lovable - Our Love Story 💝</title>
+    
+    <style>
+      /* Loading screen styles */
+      #app-loading {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(135deg, #ec4899, #8b5cf6);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+        transition: opacity 0.5s ease-out;
+      }
+      
+      #app-loading.hidden {
+        opacity: 0;
+        pointer-events: none;
+      }
+      
+      .loader {
+        text-align: center;
+        color: white;
+      }
+      
+      .loader h1 {
+        font-size: 2.5em;
+        margin-bottom: 20px;
+        animation: pulse 2s infinite;
+      }
+      
+      .spinner {
+        width: 50px;
+        height: 50px;
+        border: 5px solid rgba(255,255,255,0.3);
+        border-top-color: white;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin: 0 auto;
+      }
+      
+      @keyframes spin {
+        to { transform: rotate(360deg); }
+      }
+      
+      @keyframes pulse {
+        0%, 100% { opacity: 1; transform: scale(1); }
+        50% { opacity: 0.8; transform: scale(1.05); }
+      }
+    </style>
   </head>
   <body>
+    <!-- Loading Screen -->
+    <div id="app-loading">
+      <div class="loader">
+        <h1>💝 Lovable</h1>
+        <div class="spinner"></div>
+        <p style="margin-top: 20px; font-size: 1.2em;">Loading your memories...</p>
+      </div>
+    </div>
+    
+    <!-- React Root -->
     <div id="root"></div>
+    
+    <!-- Main App Script -->
     <script type="module" src="/src/main.jsx"></script>
+    
+    <!-- Service Worker Registration & PWA Features -->
+    <script>
+      // Hide loading screen when app is ready
+      window.addEventListener('load', () => {
+        setTimeout(() => {
+          const loader = document.getElementById('app-loading');
+          if (loader) {
+            loader.classList.add('hidden');
+            setTimeout(() => loader.remove(), 500);
+          }
+        }, 1000);
+      });
+
+      // Service Worker Registration
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/service-worker.js')
+            .then((registration) => {
+              console.log('✅ Service Worker registered successfully!');
+              console.log('📍 Scope:', registration.scope);
+              
+              // Check for updates every minute
+              setInterval(() => {
+                registration.update();
+                console.log('🔄 Checking for Service Worker updates...');
+              }, 60000);
+              
+              // Listen for updates
+              registration.addEventListener('updatefound', () => {
+                const newWorker = registration.installing;
+                console.log('🆕 New Service Worker found!');
+                
+                newWorker.addEventListener('statechange', () => {
+                  if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                    console.log('✨ New version available!');
+                    showUpdateNotification();
+                  }
+                });
+              });
+            })
+            .catch((error) => {
+              console.error('❌ Service Worker registration failed:', error);
+            });
+        });
+      } else {
+        console.log('⚠️ Service Workers are not supported in this browser');
+      }
+
+      // Show update notification
+      function showUpdateNotification() {
+        if (confirm('🎉 New version available! Reload to update?')) {
+          window.location.reload();
+        }
+      }
+
+      // Install Prompt Handler
+      let deferredPrompt;
+      let installBanner = null;
+
+      window.addEventListener('beforeinstallprompt', (e) => {
+        console.log('💝 App installation available!');
+        e.preventDefault();
+        deferredPrompt = e;
+        showInstallPromotion();
+      });
+
+      function showInstallPromotion() {
+        // Don't show if already shown
+        if (installBanner) return;
+        
+        // Don't show if user dismissed before
+        if (localStorage.getItem('installPromptDismissed') === 'true') {
+          return;
+        }
+        
+        installBanner = document.createElement('div');
+        installBanner.id = 'install-banner';
+        installBanner.innerHTML = `
+          <div style="
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(135deg, #ec4899, #8b5cf6);
+            color: white;
+            padding: 16px 24px;
+            border-radius: 16px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            z-index: 9998;
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            max-width: 90%;
+            animation: slideUp 0.5s ease-out;
+          ">
+            <div style="flex: 1;">
+              <div style="font-size: 1.3em; margin-bottom: 5px;">💝 Install Our Love App!</div>
+              <div style="font-size: 0.9em; opacity: 0.9;">Add to your home screen for quick access</div>
+            </div>
+            <button onclick="installApp()" style="
+              background: white;
+              color: #ec4899;
+              border: none;
+              padding: 10px 24px;
+              border-radius: 10px;
+              font-weight: bold;
+              cursor: pointer;
+              font-size: 1em;
+              transition: all 0.3s;
+            " onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+              Install
+            </button>
+            <button onclick="dismissInstall()" style="
+              background: transparent;
+              color: white;
+              border: 2px solid white;
+              padding: 10px 20px;
+              border-radius: 10px;
+              cursor: pointer;
+              font-size: 1em;
+              transition: all 0.3s;
+            " onmouseover="this.style.background='rgba(255,255,255,0.2)'" onmouseout="this.style.background='transparent'">
+              Later
+            </button>
+          </div>
+          <style>
+            @keyframes slideUp {
+              from {
+                transform: translateX(-50%) translateY(100px);
+                opacity: 0;
+              }
+              to {
+                transform: translateX(-50%) translateY(0);
+                opacity: 1;
+              }
+            }
+          </style>
+        `;
+        document.body.appendChild(installBanner);
+      }
+
+      function installApp() {
+        if (!deferredPrompt) {
+          console.log('❌ No install prompt available');
+          return;
+        }
+        
+        console.log('📲 Showing install prompt...');
+        deferredPrompt.prompt();
+        
+        deferredPrompt.userChoice.then((choiceResult) => {
+          if (choiceResult.outcome === 'accepted') {
+            console.log('✅ User accepted the install prompt');
+          } else {
+            console.log('❌ User dismissed the install prompt');
+          }
+          deferredPrompt = null;
+          dismissInstall();
+        });
+      }
+
+      function dismissInstall() {
+        const banner = document.getElementById('install-banner');
+        if (banner) {
+          banner.style.animation = 'slideDown 0.3s ease-out';
+          setTimeout(() => banner.remove(), 300);
+        }
+        installBanner = null;
+        localStorage.setItem('installPromptDismissed', 'true');
+      }
+
+      // Detect when app is installed
+      window.addEventListener('appinstalled', () => {
+        console.log('✅ App was installed successfully!');
+        dismissInstall();
+        
+        // Show success message
+        const successMsg = document.createElement('div');
+        successMsg.innerHTML = `
+          <div style="
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            padding: 16px 32px;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            z-index: 9999;
+            font-size: 1.1em;
+            font-weight: bold;
+            animation: slideDown 0.5s ease-out;
+          ">
+            🎉 App installed successfully! Enjoy! 💝
+          </div>
+          <style>
+            @keyframes slideDown {
+              from {
+                transform: translateX(-50%) translateY(-100px);
+                opacity: 0;
+              }
+              to {
+                transform: translateX(-50%) translateY(0);
+                opacity: 1;
+              }
+            }
+          </style>
+        `;
+        document.body.appendChild(successMsg);
+        setTimeout(() => successMsg.remove(), 3000);
+      });
+
+      // Check if running as installed PWA
+      if (window.matchMedia('(display-mode: standalone)').matches || 
+          window.navigator.standalone === true) {
+        console.log('🚀 Running as installed PWA!');
+        document.documentElement.classList.add('pwa-installed');
+      }
+
+      // Online/Offline detection
+      window.addEventListener('online', () => {
+        console.log('✅ Back online!');
+        showToast('✅ Connected to internet', 'success');
+      });
+
+      window.addEventListener('offline', () => {
+        console.log('⚠️ You are offline');
+        showToast('⚠️ You are offline - Using cached content', 'warning');
+      });
+
+      function showToast(message, type = 'info') {
+        const colors = {
+          success: '#10b981',
+          warning: '#f59e0b',
+          info: '#3b82f6'
+        };
+        
+        const toast = document.createElement('div');
+        toast.innerHTML = `
+          <div style="
+            position: fixed;
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: ${colors[type]};
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            z-index: 9997;
+            animation: fadeIn 0.3s ease-out;
+          ">
+            ${message}
+          </div>
+          <style>
+            @keyframes fadeIn {
+              from { opacity: 0; transform: translateX(-50%) translateY(20px); }
+              to { opacity: 1; transform: translateX(-50%) translateY(0); }
+            }
+          </style>
+        `;
+        document.body.appendChild(toast);
+        setTimeout(() => toast.remove(), 3000);
+      }
+
+      // Log PWA info
+      console.log('%c💝 Lovable - Love Memories App', 'font-size: 20px; color: #ec4899; font-weight: bold');
+      console.log('%cVersion: 1.0.0', 'color: #8b5cf6');
+      console.log('%cPWA Features: ✅ Enabled', 'color: #10b981');
+    </script>
   </body>
 </html>
